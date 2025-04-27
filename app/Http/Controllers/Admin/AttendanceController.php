@@ -71,7 +71,7 @@ class AttendanceController extends Controller
             'status' => 'required|array',
             'status.*' => 'required|in:present,absent,late,excused',
             'degree' => 'required|array',
-            'degree.*' => 'required|numeric|min:0|max:10',
+            'degree.*' => 'required|numeric|min:0|max:30',
             'notes' => 'nullable|array',
             'notes.*' => 'nullable|string|max:255'
         ]);

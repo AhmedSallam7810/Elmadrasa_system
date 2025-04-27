@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Quraan;
 use App\Models\Student;
-use App\Models\Classes;
 use App\Models\SchoolClass;
+use App\Models\Muhafez;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -19,6 +19,7 @@ class QuraanController extends Controller
         // Set default date to today if not provided
         $date = $request->filled('date') ? $request->date : now()->format('Y-m-d');
 
+        $total_students = Student::with(['classes'])->count();
         // Apply date filter
         $query->whereDate('date', $date);
 
@@ -27,7 +28,20 @@ class QuraanController extends Controller
             $query->whereHas('student.classes', function ($q) use ($request) {
                 $q->where('classes.id', $request->class_id);
             });
+            $total_students = Student::with(['classes'])->whereHas('classes', function($q) use ($request) {
+                $q->where('classes.id', $request->class_id);
+            })->count();
         }
+        if ($request->filled('muhafez_id')) {
+            $query->whereHas('student.muhafez', function($q) use ($request) {
+                $q->where('muhafezs.id', $request->muhafez_id);
+            });
+        }
+
+        $total = $query->count();
+        $good = $query->get()->where('status', 'good')->count();
+        $average = $query->get()->where('status', 'average')->count();
+        $weak = $query->get()->where('status', 'weak')->count();
 
         // Apply status filter
         if ($request->filled('status')) {
@@ -41,13 +55,15 @@ class QuraanController extends Controller
 
         $quraans = $query->latest()->paginate(10);
         $classes = SchoolClass::all();
+        $muhafezs = Muhafez::all();
 
         // Calculate statistics
         $stats = [
-            'total' => $query->count(),
-            'good' => $query->where('status', 'good')->count(),
-            'average' => $query->where('status', 'average')->count(),
-            'weak' => $query->where('status', 'weak')->count(),
+            'total_students' => $total_students,
+            'total' => $total,
+            'good' => $good,
+            'average' => $average,
+            'weak' => $weak,
         ];
 
         // If it's an AJAX request, return only the table partial
@@ -55,7 +71,7 @@ class QuraanController extends Controller
             return view('admin.quraans.partials.quraan-table', compact('quraans', 'date', 'stats'));
         }
 
-        return view('admin.quraans.index', compact('quraans', 'classes', 'date', 'stats'));
+        return view('admin.quraans.index', compact('quraans', 'classes', 'date', 'stats', 'muhafezs'));
     }
 
     public function create()
@@ -79,8 +95,9 @@ class QuraanController extends Controller
 
         $students = $query->get();
         $classes = SchoolClass::all();
+        $muhafezs = Muhafez::all();
 
-        return view('admin.quraans.create', compact('students', 'classes', 'date'));
+        return view('admin.quraans.create', compact('students', 'classes', 'date', 'muhafezs'));
     }
 
     public function store(Request $request)
@@ -93,7 +110,7 @@ class QuraanController extends Controller
             'status' => 'required|array',
             'status.*' => 'required|in:good,average,weak',
             'degree' => 'required|array',
-            'degree.*' => 'required|numeric|min:0|max:10',
+            'degree.*' => 'required|numeric|min:0|max:30',
             'notes' => 'nullable|array',
             'notes.*' => 'nullable|string|max:255'
         ]);
@@ -167,7 +184,7 @@ class QuraanController extends Controller
     {
         $request->validate([
             'status' => 'required|in:good,average,weak',
-            'degree' => 'required|numeric|min:0|max:10',
+            'degree' => 'required|numeric|min:0|max:30',
             'notes' => 'nullable|string|max:255'
         ]);
 
@@ -196,11 +213,11 @@ class QuraanController extends Controller
     public function bulkCreate(Request $request)
     {
         $request->validate([
-            'class_id' => 'required|exists:classes,id',
+            'class_id' => 'required|exists:school_classes,id',
             'date' => 'required|date'
         ]);
 
-        $class = Classes::with('students')->findOrFail($request->class_id);
+        $class = SchoolClass::with('students')->findOrFail($request->class_id);
         $date = Carbon::parse($request->date);
 
         return view('admin.quraans.bulk-create', compact('class', 'date'));

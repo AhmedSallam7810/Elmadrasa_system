@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Record Werd')
+@section('title', __('admin.record_quraan'))
 
 @section('content')
 <div class="container-fluid">
@@ -8,10 +8,12 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Record Quraan</h3>
+                    <h3 class="card-title">
+                        <i class="fas fa-filter mr-2"></i>{{ __('admin.record_quraan') }}
+                    </h3>
                     <div class="card-tools">
                         <a href="{{ route('admin.quraans.index') }}" class="btn btn-default btn-sm">
-                            <i class="fas fa-arrow-left"></i> Back
+                            <i class="fas fa-arrow-left"></i> {{ __('admin.back') }}
                         </a>
                     </div>
                 </div>
@@ -19,29 +21,36 @@
                     <div class="row mb-4">
                         <div class="col-md-12">
                             <div class="card card-outline card-info">
-                                <div class="card-header">
-                                    <h3 class="card-title">
-                                        <i class="fas fa-filter mr-2"></i>Filters
-                                    </h3>
-                                </div>
+
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <div class="form-group">
-                                                <label for="date">Date</label>
-                                                <input type="date" class="form-control" id="date" value="{{ request('date', $date) }}">
+                                                <label for="date">{{ __('admin.date') }}</label>
+                                                <input type="date" class="form-control filter-input" id="date" value="{{ request('date', $date) }}">
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <div class="form-group">
-                                                <label for="class_id">Class</label>
-                                                <select class="form-control select2" id="class_id">
-                                                    <option value="">All Classes</option>
+                                                <label for="class_id">{{ __('admin.class') }}</label>
+                                                <select class="form-control select2 filter-input" id="class_id">
+                                                    <option value="">{{ __('admin.all_classes') }}</option>
                                                     @foreach($classes as $class)
                                                         <option value="{{ $class->id }}"
                                                             {{ request('class_id') == $class->id ? 'selected' : '' }}>
                                                             {{ $class->name }}
                                                         </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="muhafez_id">{{ __('admin.muhafez') }}</label>
+                                                <select class="form-control select2 filter-input" id="muhafez_id" name="muhafez_id">
+                                                    <option value="">{{ __('admin.all_muhafezs') }}</option>
+                                                    @foreach($muhafezs as $muhafez)
+                                                        <option value="{{ $muhafez->id }}" {{ request('muhafez_id') == $muhafez->id ? 'selected' : '' }}>{{ $muhafez->name }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -56,6 +65,7 @@
                         @csrf
                         <input type="hidden" name="date" id="form_date" value="{{ request('date', $date) }}">
                         <input type="hidden" name="class_id" id="form_class_id" value="{{ request('class_id') }}">
+                        <input type="hidden" name="muhafez_id" id="form_muhafez_id" value="{{ request('muhafez_id') }}">
 
                         @if($students->isEmpty())
                             <div class="alert alert-info">
@@ -68,79 +78,12 @@
                                 @endif --}}
                             </div>
                         @else
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 40px">
-                                                <div class="custom-control custom-checkbox">
-                                                    <input type="checkbox" class="custom-control-input" id="select-all">
-                                                    <label class="custom-control-label" for="select-all"></label>
-                                                </div>
-                                            </th>
-                                            <th>Student Name</th>
-                                            <th>Class</th>
-                                            <th>Status</th>
-                                            <th>Degree</th>
-                                            <th>Notes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($students as $student)
-                                            <tr>
-                                                <td>
-                                                    <div class="custom-control custom-checkbox">
-                                                        <input type="checkbox" class="custom-control-input student-checkbox"
-                                                            id="student_{{ $student->id }}"
-                                                            name="student_ids[]"
-                                                            value="{{ $student->id }}"
-                                                            checked>
-                                                        <label class="custom-control-label" for="student_{{ $student->id }}"></label>
-                                                    </div>
-                                                </td>
-                                                <td>{{ $student->name }}</td>
-                                                <td>{{ $student->classes->pluck('name')->implode(', ') }}</td>
-                                                <td>
-                                                    <select class="form-control status-select @error('status.'.$student->id) is-invalid @enderror"
-                                                        name="status[{{ $student->id }}]"
-                                                        data-student-id="{{ $student->id }}">
-                                                        <option value="good">Good</option>
-                                                        <option value="average">Average</option>
-                                                        <option value="weak">Weak</option>
-                                                    </select>
-                                                    @error('status.'.$student->id)
-                                                        <span class="invalid-feedback">{{ $message }}</span>
-                                                    @enderror
-                                                </td>
-                                                <td>
-                                                    <input type="number" class="form-control degree-input @error('degree.'.$student->id) is-invalid @enderror"
-                                                        name="degree[{{ $student->id }}]"
-                                                        value="10"
-                                                        min="0"
-                                                        max="10"
-                                                        step="0.5"
-                                                        data-student-id="{{ $student->id }}">
-                                                    @error('degree.'.$student->id)
-                                                        <span class="invalid-feedback">{{ $message }}</span>
-                                                    @enderror
-                                                </td>
-                                                <td>
-                                                    <input type="text" class="form-control @error('notes.'.$student->id) is-invalid @enderror"
-                                                        name="notes[{{ $student->id }}]"
-                                                        value="{{ old('notes.'.$student->id) }}">
-                                                    @error('notes.'.$student->id)
-                                                        <span class="invalid-feedback">{{ $message }}</span>
-                                                    @enderror
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                            <div class="table-responsive" id="students-table">
+                                @include('admin.quraans.partials.create-students-table')
                             </div>
-
                             <div class="form-group">
-                                <button type="submit" class="btn btn-primary">Save Quraan</button>
-                                <a href="{{ route('admin.quraans.index') }}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">{{ __('admin.save') }}</button>
+                                <a href="{{ route('admin.quraans.index') }}" class="btn btn-secondary">{{ __('admin.cancel') }}</a>
                             </div>
                         @endif
                     </form>
@@ -151,7 +94,8 @@
 </div>
 @endsection
 
-@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
 $(document).ready(function() {
     // Initialize Select2
@@ -176,11 +120,11 @@ $(document).ready(function() {
         var degreeInput = $('.degree-input[data-student-id="' + studentId + '"]');
 
         if ($(this).val() === 'weak') {
-            degreeInput.val('3');
-        } else if ($(this).val() === 'good') {
             degreeInput.val('10');
+        } else if ($(this).val() === 'good') {
+            degreeInput.val('30');
         } else if ($(this).val() === 'average') {
-            degreeInput.val('7');
+            degreeInput.val('20');
         }
     });
 
@@ -191,19 +135,21 @@ $(document).ready(function() {
 
     // Filter students by class
     $('#class_id').change(function() {
-        var classId = $(this).val();
-        var date = $('#date').val();
+        var classId = $(this).val(); var date = $('#date').val(); var muhafez = $('#muhafez_id').val();
         $('#form_class_id').val(classId);
-        window.location.href = '{{ route('admin.quraans.create') }}?class_id=' + classId + '&date=' + date;
+        window.location.href = '{{ route('admin.quraans.create') }}?class_id=' + classId + '&date=' + date + '&muhafez_id=' + muhafez;
     });
-
     // Update date and reload
     $('#date').change(function() {
-        var classId = $('#class_id').val();
-        var date = $(this).val();
+        var classId = $('#class_id').val(); var date = $(this).val(); var muhafez = $('#muhafez_id').val();
         $('#form_date').val(date);
-        window.location.href = '{{ route('admin.quraans.create') }}?class_id=' + classId + '&date=' + date;
+        window.location.href = '{{ route('admin.quraans.create') }}?class_id=' + classId + '&date=' + date + '&muhafez_id=' + muhafez;
+    });
+    // Update muhafez filter
+    $('#muhafez_id').change(function() {
+        var classId = $('#class_id').val(); var date = $('#date').val(); var muhafez = $(this).val();
+        $('#form_muhafez_id').val(muhafez);
+        window.location.href = '{{ route('admin.quraans.create') }}?class_id=' + classId + '&date=' + date + '&muhafez_id=' + muhafez;
     });
 });
 </script>
-@endpush

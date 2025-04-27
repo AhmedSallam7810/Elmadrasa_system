@@ -205,7 +205,7 @@ return [
     'no_werd_records_found' => 'لا يوجد سجلات ورد',
     'all_status' => 'جميع الحالات',
     'date' => 'التاريخ',
-    'add_werd' => 'إضافة ورد جديد',
+    'add_werd' => 'إضافة درجات ورد ',
     'not_assigned' => 'لا يوجد ',
     'no_students_found_without_records' => 'لا يوجد طلاب بدون تسجيل في هذا التاريخ',
     'class_name' => 'اسم الفرقة',
@@ -233,5 +233,15 @@ return [
     'filter_by_status'=>'بحث حسب الحالة',
     'filter_by_date'=>'بحث حسب التاريخ',
     'attendances'=>'الحضور والغياب',
-    'students_according_to_classes'=>'اجمالي الطلاب حسب الفرقة'
+    'students_according_to_classes'=>'اجمالي الطلاب حسب الفرقة',
+    'copyright'=>'حقوق النشر',
+    'login'=>'تسجيل الدخول',
+    'stay_logged_in'=>'بقى تسجيل الدخول',
+    'let_me_in'=>'أدخلني',
+    'email'=>'البريد الالكتروني',
+    'password'=>'الرقم السري',
+    'remember_me'=>'تذكرني',
+    'login'=>'تسجيل الدخول',
+    'werd_management'=>'إدارة الأوراد',
+    'record_werd'=>'تسجيل الأوراد'
 ];

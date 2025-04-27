@@ -22,20 +22,17 @@
                     <div class="row mb-4">
                         <div class="col-md-12">
                             <div class="card card-outline card-info">
-                                <div class="card-header">
-                                    <h3 class="card-title">{{ __('admin.filters') }}</h3>
-                                </div>
                                 <div class="card-body">
                                     <form id="filters-form" method="GET">
                                         <div class="row">
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label for="date">{{ __('admin.date') }}</label>
                                                     <input type="date" class="form-control filter-input" id="date" name="date"
                                                         value="{{ request('date', now()->format('Y-m-d')) }}">
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label for="class_id">{{ __('admin.class') }}</label>
                                                     <select class="form-control select2 filter-input" id="class_id" name="class_id">
@@ -48,10 +45,10 @@
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label for="status">{{ __('admin.status') }}</label>
-                                                    <select class="form-control filter-input" id="status" name="status">
+                                                    <select class="form-control select2 filter-input" id="status" name="status">
                                                         <option value="">{{ __('admin.all_statuses') }}</option>
                                                         <option value="good" {{ request('status') === 'good' ? 'selected' : '' }}>
                                                             {{ __('admin.good') }}
@@ -63,6 +60,25 @@
                                                             {{ __('admin.weak') }}
                                                         </option>
                                                     </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="form-group">
+                                                    <label for="muhafez_id">{{ __('admin.muhafez') }}</label>
+                                                    <select class="form-control select2 filter-input" id="muhafez_id" name="muhafez_id">
+                                                        <option value="">{{ __('admin.all_muhafezs') }}</option>
+                                                        @foreach($muhafezs as $muhafez)
+                                                            <option value="{{ $muhafez->id }}" {{ request('muhafez_id') == $muhafez->id ? 'selected' : '' }}>{{ $muhafez->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-1">
+                                                <div class="form-group">
+                                                    <label>&nbsp;</label>
+                                                    <button type="button" class="btn btn-primary btn-block" id="clear_filters">
+                                                        <i class="fas fa-eraser mr-2"></i>{{ __('admin.clear') }}
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -83,12 +99,14 @@
 </div>
 @endsection
 
-@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 $(document).ready(function() {
     // Initialize Select2
-    $('.select2').select2();
-
+    $('.select2').select2({
+            theme: 'bootstrap4'
+        });
     // Add debounce function to prevent too many requests
     function debounce(func, wait) {
         let timeout;
@@ -105,6 +123,7 @@ $(document).ready(function() {
     // Function to update table content
     function updateTable() {
         var form = $('#filters-form');
+        console.log(form.serialize());
         $.ajax({
             url: '{{ route('admin.quraans.index') }}',
             data: form.serialize(),
@@ -127,9 +146,16 @@ $(document).ready(function() {
 
     // Handle all filter changes
     $('.filter-input').on('change', debouncedUpdate);
-    
+
     // Special handling for Select2
     $('.select2.filter-input').on('select2:select select2:unselect', debouncedUpdate);
+
+    // Clear filters button
+    $('#clear_filters').on('click', function() {
+        $('.filter-input').val('').trigger('change');
+        $('#date').val('{{ now()->format('Y-m-d') }}');
+        updateTable();
+    });
 
     // Add CSS for loading state
     $('<style>')
@@ -137,4 +163,3 @@ $(document).ready(function() {
         .appendTo('head');
 });
 </script>
-@endpush

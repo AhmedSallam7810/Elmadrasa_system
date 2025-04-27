@@ -30,9 +30,9 @@ class Quraan extends Model
     public function calculateDegree(): int
     {
         return match($this->status) {
-            'good' => 10,
-            'average' => 7,
-            'weak' => 3,
+            'good' => 30,
+            'average' => 20,
+            'weak' => 10,
             default => 0,
         };
     }

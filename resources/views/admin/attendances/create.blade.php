@@ -110,9 +110,9 @@
                                                 <td>
                                                     <input type="number" class="form-control degree-input @error('degree.'.$student->id) is-invalid @enderror"
                                                         name="degree[{{ $student->id }}]"
-                                                        value="10"
+                                                        value="30"
                                                         min="0"
-                                                        max="10"
+                                                        max="30"
                                                         step="0.5"
                                                         data-student-id="{{ $student->id }}">
                                                     @error('degree.'.$student->id)
@@ -165,20 +165,16 @@ $(document).ready(function() {
         $('#select-all').prop('checked', allChecked);
     });
 
-    // Handle status change to update degree
+    // Handle status change to update degree to 30-point scale
     $('.status-select').change(function() {
         var studentId = $(this).data('student-id');
         var degreeInput = $('.degree-input[data-student-id="' + studentId + '"]');
-
         if ($(this).val() === 'absent') {
-            degreeInput.val('0');
-            degreeInput.prop('disabled', true);
+            degreeInput.val('0').prop('disabled', true);
         } else if ($(this).val() === 'present') {
-            degreeInput.val('10');
-            degreeInput.prop('disabled', false);
+            degreeInput.val('30').prop('disabled', false);
         } else if ($(this).val() === 'late') {
-            degreeInput.val('5');
-            degreeInput.prop('disabled', false);
+            degreeInput.val('15').prop('disabled', false);
         }
     });
 

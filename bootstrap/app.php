@@ -28,5 +28,14 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->renderable(function (Illuminate\Auth\AuthenticationException $e, $request) {
+            $currentGuard = $e->guards()[0];
+            if ($currentGuard == 'admin') {
+                return redirect()->route('admin.login');
+            }else{
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], 401);
+            }
+        });
     })->create();

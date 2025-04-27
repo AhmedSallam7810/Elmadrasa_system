@@ -12,46 +12,49 @@ use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\QuraanController;
 use App\Http\Controllers\Admin\WerdsController;
 use App\Http\Controllers\Admin\MuhafezController;
+use App\Http\Controllers\Admin\AuthController;
 
-// Route::middleware(['auth'])->group(function () {
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-Route::resource('/students', StudentsController::class)->names('admin.students');
-Route::resource('/classes', ClassesController::class)->names('admin.classes');
+// Admin authentication
+Route::get('/admin/login', [AuthController::class, 'showLoginForm'])->name('admin.login');
+Route::post('/admin/login', [AuthController::class, 'login'])->name('admin.login.submit');
 
+// Protected admin routes
+Route::middleware(['auth:admin'])->group(function() {
+    Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::resource('/students', StudentsController::class)->names('admin.students');
+    Route::resource('/classes', ClassesController::class)->names('admin.classes');
 
+    // Awards management routes
+    Route::resource('awards', AwardsController::class)->names('admin.awards');
+    Route::post('awards/{award}/complete', [AwardsController::class, 'markAsCompleted'])->name('admin.awards.complete');
 
+    // Additional routes for class-student relationship
+    Route::get('/classes/{id}/enroll-students', [ClassesController::class, 'enrollStudents'])->name('admin.classes.enroll-students');
+    Route::post('/classes/{id}/enroll-students', [ClassesController::class, 'storeEnrolledStudents'])->name('admin.classes.store-enrolled-students');
+    Route::delete('/classes/{classId}/students/{studentId}', [ClassesController::class, 'removeStudent'])->name('admin.classes.remove-student');
 
-// Awards management routes
-Route::resource('awards', AwardsController::class)->names('admin.awards');
-Route::post('awards/{award}/complete', [AwardsController::class, 'markAsCompleted'])->name('admin.awards.complete');
+    // Study Years Routes
+    Route::resource('study-years', StudyYearController::class)->names('admin.study-years');
 
+    // Reports Routes
+    Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports.index');
+    Route::get('/reports/generate', [ReportController::class, 'generate'])->name('admin.reports.generate');
 
-// Additional routes for class-student relationship
-Route::get('/classes/{id}/enroll-students', [ClassesController::class, 'enrollStudents'])->name('admin.classes.enroll-students');
-Route::post('/classes/{id}/enroll-students', [ClassesController::class, 'storeEnrolledStudents'])->name('admin.classes.store-enrolled-students');
-Route::delete('/classes/{classId}/students/{studentId}', [ClassesController::class, 'removeStudent'])->name('admin.classes.remove-student');
+    // Exam Routes
+    Route::resource('exams', ExamController::class)->names('admin.exams');
 
-// Study Years Routes
-Route::resource('study-years', StudyYearController::class)->names('admin.study-years');
+    // Attendance Routes
+    Route::resource('attendances', AttendanceController::class)->names('admin.attendances');
+    Route::get('attendances/bulk-create', [AttendanceController::class, 'bulkCreate'])->name('admin.attendance.bulk-create');
 
-// Reports Routes
-Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports.index');
-Route::get('/reports/generate', [ReportController::class, 'generate'])->name('admin.reports.generate');
+    // Werd Routes
+    Route::resource('werds', WerdsController::class)->names('admin.werds');
 
-// Exam Routes
-Route::resource('exams', ExamController::class)->names('admin.exams');
+    Route::resource('quraans', QuraanController::class)->names('admin.quraans');
 
-// Attendance Routes
-Route::resource('attendances', AttendanceController::class)->names('admin.attendances');
-Route::get('attendances/bulk-create', [AttendanceController::class, 'bulkCreate'])->name('admin.attendance.bulk-create');
-// });
-
-// Werd Routes
-Route::resource('werds', WerdsController::class)->names('admin.werds');
-
-Route::resource('quraans', QuraanController::class)->names('admin.quraans');
-
-Route::resource('muhafezs', MuhafezController::class)->names('admin.muhafezs');
-Route::get('/muhafezs/{id}/enroll-students', [MuhafezController::class, 'showEnrollStudents'])->name('admin.muhafezs.enroll-students');
-Route::post('/muhafezs/{id}/enroll-students', [MuhafezController::class, 'enrollStudents'])->name('admin.muhafezs.enroll-students.store');
-Route::delete('/muhafezs/{muhafezId}/students/{studentId}', [MuhafezController::class, 'removeStudent'])->name('admin.muhafezs.enroll-students.remove');
+    Route::resource('muhafezs', MuhafezController::class)->names('admin.muhafezs');
+    Route::get('/muhafezs/{id}/enroll-students', [MuhafezController::class, 'showEnrollStudents'])->name('admin.muhafezs.enroll-students');
+    Route::post('/muhafezs/{id}/enroll-students', [MuhafezController::class, 'enrollStudents'])->name('admin.muhafezs.enroll-students.store');
+    Route::delete('/muhafezs/{muhafezId}/students/{studentId}', [MuhafezController::class, 'removeStudent'])->name('admin.muhafezs.enroll-students.remove');
+});

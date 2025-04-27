@@ -15,40 +15,43 @@ class WerdsController extends Controller
     {
         $query = Werd::with(['student.classes'])
             ->orderBy('date', 'desc');
+            $total_students = Student::with(['classes'])->count();
 
-        $date = $request->filled('date') ? $request->date : now()->format('Y-m-d');
-        // Apply filters
-        if ($request->filled('date')) {
-            $query->whereDate('date', $request->date);
-        }
+            $date = $request->filled('date') ? $request->date : now()->format('Y-m-d');
+            // Apply filters
+            if ($request->filled('class_id')) {
+                $query->whereHas('student.classes', function($q) use ($request) {
+                    $q->where('classes.id', $request->class_id);
+                });
 
-        if ($request->filled('class_id')) {
-            $query->whereHas('student.classes', function($q) use ($request) {
-                $q->where('classes.id', $request->class_id);
-            });
-        }
+                $total_students = Student::with(['classes'])->whereHas('classes', function($q) use ($request) {
+                    $q->where('classes.id', $request->class_id);
+                })->count();
+            }
+            if ($request->filled('date')) {
+                $query->whereDate('date', $request->date);
+            }
+           
+            $total = $query->count();
+            $good = $query->get()->where('status', 'good')->count();
+            $average = $query->get()->where('status', 'average')->count();
+            $weak = $query->get()->where('status', 'weak')->count();
+
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('degree')) {
-            $query->where('degree', $request->degree);
-        }
-
-        // Clone the query for stats to avoid pagination issues
-        $statsQuery = clone $query;
-
         $werds = $query->paginate(10);
 
         // Calculate statistics using the cloned query
         $stats = [
-            'total' => $statsQuery->count(),
-            'good' => $statsQuery->where('status', 'good')->count(),
-            'average' => $statsQuery->where('status', 'average')->count(),
-            'weak' => $statsQuery->where('status', 'weak')->count(),
+            'total_students' => $total_students,
+            'total' => $total,
+            'good' => $good,
+            'average' => $average,
+            'weak' => $weak,
         ];
-
         // If AJAX request, return only the table partial
         if ($request->ajax()) {
             return view('admin.werds.partials.werd-table', compact('werds', 'stats', 'date'));

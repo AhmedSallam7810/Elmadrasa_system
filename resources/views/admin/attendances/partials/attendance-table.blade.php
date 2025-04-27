@@ -130,7 +130,7 @@
                     </td>
                     <td>
                         <span class="badge badge-info">
-                            {{ $attendance->degree }} / 10
+                            {{ $attendance->degree }} / 30
                         </span>
                     </td>
                     <td>{{ $attendance->notes }}</td>

@@ -24,6 +24,7 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::guard('admin')->attempt($request->only('email', 'password'))) {
+            dd($request->all());
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);

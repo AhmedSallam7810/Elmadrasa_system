@@ -8,10 +8,10 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Record Werd</h3>
+                    <h3 class="card-title">{{ __('admin.record_werd') }}</h3>
                     <div class="card-tools">
                         <a href="{{ route('admin.werds.index') }}" class="btn btn-default btn-sm">
-                            <i class="fas fa-arrow-left"></i> Back
+                            <i class="fas fa-arrow-left"></i> {{ __('admin.back') }}
                         </a>
                     </div>
                 </div>
@@ -19,24 +19,19 @@
                     <div class="row mb-4">
                         <div class="col-md-12">
                             <div class="card card-outline card-info">
-                                <div class="card-header">
-                                    <h3 class="card-title">
-                                        <i class="fas fa-filter mr-2"></i>Filters
-                                    </h3>
-                                </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="date">Date</label>
+                                                <label for="date">{{ __('admin.date') }}</label>
                                                 <input type="date" class="form-control" id="date" value="{{ request('date', $date) }}">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="class_id">Class</label>
+                                                <label for="class_id">{{ __('admin.class') }}</label>
                                                 <select class="form-control select2" id="class_id">
-                                                    <option value="">All Classes</option>
+                                                    <option value="">{{ __('admin.all_classes') }}</option>
                                                     @foreach($classes as $class)
                                                         <option value="{{ $class->id }}"
                                                             {{ request('class_id') == $class->id ? 'selected' : '' }}>
@@ -78,11 +73,11 @@
                                                     <label class="custom-control-label" for="select-all"></label>
                                                 </div>
                                             </th>
-                                            <th>Student Name</th>
-                                            <th>Class</th>
-                                            <th>Status</th>
-                                            <th>Degree</th>
-                                            <th>Notes</th>
+                                            <th>{{ __('admin.student_name') }}</th>
+                                            <th>{{ __('admin.class') }}</th>
+                                            <th>{{ __('admin.status') }}</th>
+                                            <th>{{ __('admin.degree') }}</th>
+                                            <th>{{ __('admin.notes') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -139,8 +134,8 @@
                             </div>
 
                             <div class="form-group">
-                                <button type="submit" class="btn btn-primary">Save Werd</button>
-                                <a href="{{ route('admin.werds.index') }}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">{{ __('admin.save') }}</button>
+                                <a href="{{ route('admin.werds.index') }}" class="btn btn-secondary">{{ __('admin.cancel') }}</a>
                             </div>
                         @endif
                     </form>
