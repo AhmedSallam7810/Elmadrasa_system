@@ -60,7 +60,6 @@
                             </tbody>
                         </table>
                     </div>
-                    {{ $awards->links() }}
                 </div>
             </div>
         </div>

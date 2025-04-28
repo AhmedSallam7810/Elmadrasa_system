@@ -157,7 +157,3 @@
         </tbody>
     </table>
 </div>
-
-<div class="mt-3">
-    {{ $quraans->appends(request()->query())->links() }}
-</div>

@@ -160,6 +160,4 @@
     </table>
 </div>
 
-<div class="mt-3">
-    {{ $werds->appends(request()->query())->links() }}
-</div>
+

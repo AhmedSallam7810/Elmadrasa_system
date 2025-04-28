@@ -163,6 +163,4 @@
     </table>
 </div>
 
-<div class="mt-3">
-    {{ $attendances->appends(request()->query())->links() }}
-</div>
+

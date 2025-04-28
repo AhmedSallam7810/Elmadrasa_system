@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Exam Records')
+@section('title', 'Behavior Records')
 
 @section('content')
 <div class="container-fluid">
@@ -8,10 +8,10 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">{{ __('admin.exam_management') }}</h3>
+                    <h3 class="card-title">{{ __('admin.behavior_management') }}</h3>
                     <div class="card-tools">
-                        <a href="{{ route('admin.exams.create') }}" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> {{ __('admin.add_exam') }}
+                        <a href="{{ route('admin.behaviors.create') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> {{ __('admin.add') }}
                         </a>
                     </div>
                 </div>
@@ -65,8 +65,8 @@
                     <!-- Behavior Table Section -->
                     <div class="card card-outline card-primary">
                         <div class="card-body p-0">
-                            <div id="exam-table">
-                                @include('admin.exams.partials.exam-table')
+                            <div id="behavior-table">
+                                {{-- @include('admin.behaviors.partials.behavior-table') --}}
                             </div>
                         </div>
                     </div>
@@ -86,21 +86,21 @@
 <script>
 $(document).ready(function() {
     $('.select2').select2({ theme: 'bootstrap4' });
-    function updateExamTable() {
-        $('#exam-table').html('<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-3">Loading exam records...</p></div>');
+    function updateBehaviorTable() {
+        $('#behavior-table').html('<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-3">Loading behavior records...</p></div>');
         $.ajax({
-            url: '{{ route('admin.exams.index') }}',
+            url: '{{ route('admin.behaviors.index') }}',
             type: 'GET',
             data: { class_id: $('#class_filter').val(), date: $('#date_filter').val(), status: $('#status_filter').val() },
             headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' },
-            success: function(response) { $('#exam-table').html(response); },
-            error: function() { $('#exam-table').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Error loading exam records.</div>'); }
+            success: function(response) { $('#behavior-table').html(response); },
+            error: function() { $('#behavior-table').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Error loading behavior records.</div>'); }
         });
     }
-    $('#class_filter,#date_filter,#status_filter').on('change', updateExamTable);
-    $('#clear_filters').on('click', function() { $('#class_filter,#status_filter').val('').trigger('change'); $('#date_filter').val('{{ date('Y-m-d') }}'); updateExamTable(); });
+    $('#class_filter,#date_filter,#status_filter').on('change', updateBehaviorTable);
+    $('#clear_filters').on('click', function() { $('#class_filter,#status_filter').val('').trigger('change'); $('#date_filter').val('{{ date('Y-m-d') }}'); updateBehaviorTable(); });
     $(document).on('click', '.good,.average,.weak,.total', function(e){ e.preventDefault(); $('#status_filter').val($(this).hasClass('total')?'':$(this).data('status')).trigger('change'); });
-    updateExamTable();
+    updateBehaviorTable();
 });
 </script>
 @endsection

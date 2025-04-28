@@ -4,15 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Student;
 
-class Exam extends Model
+class Summary extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['student_id', 'date', 'status', 'score', 'notes'];
-
-    protected $casts = ['date' => 'date'];
+    protected $table = 'summaries';
+    protected $fillable = ['student_id', 'date', 'status', 'degree', 'notes'];
+    protected $casts = ['date' => 'date', 'degree' => 'float'];
 
     public function student()
     {

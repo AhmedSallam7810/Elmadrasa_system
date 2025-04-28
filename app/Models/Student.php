@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Exam;
+use App\Models\Research;
+use App\Models\Summary;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -70,5 +73,37 @@ class Student extends Authenticatable
     public function muhafez(): BelongsTo
     {
         return $this->belongsTo(Muhafez::class);
+    }
+
+    /**
+     * Relationship with behaviors (many-to-many equivalent: records)
+     */
+    public function behaviors(): HasMany
+    {
+        return $this->hasMany(Behavior::class);
+    }
+
+    /**
+     * Relationship with researchs (many records)
+     */
+    public function researchs(): HasMany
+    {
+        return $this->hasMany(Research::class);
+    }
+
+    /**
+     * Relationship with exams (records)
+     */
+    public function exams(): HasMany
+    {
+        return $this->hasMany(Exam::class);
+    }
+
+    /**
+     * Relationship with summaries
+     */
+    public function summaries(): HasMany
+    {
+        return $this->hasMany(Summary::class);
     }
 }

@@ -1,18 +1,18 @@
 @extends('layouts.admin')
 
-@section('title', __('admin.record_exam'))
+@section('title', __('admin.record_behavior'))
 
 @section('content')
 <div class="container-fluid">
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">{{ __('admin.record_exam') }}</h3>
+            <h3 class="card-title">{{ __('admin.record_behavior') }}</h3>
             <div class="card-tools">
-                <a href="{{ route('admin.exams.index') }}" class="btn btn-default btn-sm"><i class="fas fa-arrow-left"></i> {{ __('admin.back') }}</a>
+                <a href="{{ route('admin.behaviors.index') }}" class="btn btn-default btn-sm"><i class="fas fa-arrow-left"></i> {{ __('admin.back') }}</a>
             </div>
         </div>
         <div class="card-body">
-            <form action="{{ route('admin.exams.store') }}" method="POST" id="exam-form">
+            <form action="{{ route('admin.behaviors.store') }}" method="POST" id="behavior-form">
                 @csrf
                 <input type="hidden" name="date" id="form_date" value="{{ request('date', $date) }}">
                 <input type="hidden" name="class_id" id="form_class_id" value="{{ request('class_id') }}">
@@ -70,7 +70,7 @@
                 </div>
                 <div class="mt-3">
                     <button type="submit" class="btn btn-primary">{{ __('admin.save') }}</button>
-                    <a href="{{ route('admin.exams.index') }}" class="btn btn-secondary">{{ __('admin.cancel') }}</a>
+                    <a href="{{ route('admin.behaviors.index') }}" class="btn btn-secondary">{{ __('admin.cancel') }}</a>
                 </div>
                 @endif
             </form>
@@ -86,7 +86,7 @@ $(function() {
     $('#select-all').change(function(){ $('.student-checkbox').prop('checked', $(this).prop('checked')); });
     $('.status-select').change(function(){ var id=$(this).data('student-id'), val=$(this).val(); var inp=$('.degree-input[data-student-id="'+id+'"]'); if(val=='weak') inp.val(3); else if(val=='average') inp.val(7); else inp.val(10); });
     $('.status-select').each(function(){ $(this).data('student-id', $(this).attr('name').match(/\d+/)[0]); });
-    $('#class_id,#date').change(function(){ window.location.href = '{{ route('admin.exams.create') }}?class_id='+$('#class_id').val()+'&date='+$('#date').val(); });
+    $('#class_id,#date').change(function(){ window.location.href = '{{ route('admin.behaviors.create') }}?class_id='+$('#class_id').val()+'&date='+$('#date').val(); });
 });
 </script>
 @endpush

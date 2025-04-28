@@ -8,11 +8,15 @@ use App\Http\Controllers\Admin\ClassesController;
 use App\Http\Controllers\Admin\StudyYearController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ExamController;
+use App\Http\Controllers\Admin\ExamsController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\QuraanController;
 use App\Http\Controllers\Admin\WerdsController;
 use App\Http\Controllers\Admin\MuhafezController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\BehaviorsController;
+use App\Http\Controllers\Admin\ResearchsController;
+use App\Http\Controllers\Admin\SummariesController;
 
 // Admin authentication
 Route::get('/admin/login', [AuthController::class, 'showLoginForm'])->name('admin.login');
@@ -41,15 +45,15 @@ Route::middleware(['auth:admin'])->group(function() {
     Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports.index');
     Route::get('/reports/generate', [ReportController::class, 'generate'])->name('admin.reports.generate');
 
-    // Exam Routes
-    Route::resource('exams', ExamController::class)->names('admin.exams');
+    // Exam management routes
+    Route::resource('exams', ExamsController::class)->names('admin.exams');
 
     // Attendance Routes
     Route::resource('attendances', AttendanceController::class)->names('admin.attendances');
     Route::get('attendances/bulk-create', [AttendanceController::class, 'bulkCreate'])->name('admin.attendance.bulk-create');
 
-    // Werd Routes
-    Route::resource('werds', WerdsController::class)->names('admin.werds');
+    // Summaries module routes
+    Route::resource('summaries', SummariesController::class)->names('admin.summaries');
 
     Route::resource('quraans', QuraanController::class)->names('admin.quraans');
 
@@ -57,4 +61,11 @@ Route::middleware(['auth:admin'])->group(function() {
     Route::get('/muhafezs/{id}/enroll-students', [MuhafezController::class, 'showEnrollStudents'])->name('admin.muhafezs.enroll-students');
     Route::post('/muhafezs/{id}/enroll-students', [MuhafezController::class, 'enrollStudents'])->name('admin.muhafezs.enroll-students.store');
     Route::delete('/muhafezs/{muhafezId}/students/{studentId}', [MuhafezController::class, 'removeStudent'])->name('admin.muhafezs.enroll-students.remove');
+
+    // Research management routes
+    Route::resource('researchs', ResearchsController::class)->names('admin.researchs');
+
+    // Behavior management routes
+    Route::resource('behaviors', BehaviorsController::class)->names('admin.behaviors');
+    Route::resource('werds', WerdsController::class)->names('admin.werds');
 });

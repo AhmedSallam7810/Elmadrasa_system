@@ -54,9 +54,7 @@
                             @endforeach
                         </tbody>
                     </table>
-                    <div class="mt-4">
-                        {{ $muhafezs->links() }}
-                    </div>
+                  
                 </div>
             </div>
         </div>

@@ -243,5 +243,10 @@ return [
     'remember_me'=>'تذكرني',
     'login'=>'تسجيل الدخول',
     'werd_management'=>'إدارة الأوراد',
-    'record_werd'=>'تسجيل الأوراد'
+    'record_werd'=>'تسجيل الأوراد',
+    'behaviors'=>'السمت والسلوك',
+    'behavior_management'=>'تسجيل السمت والسلوك',
+    'summaries'=>'الملخصات',
+    'record_summaries'=>'تسجيل الملخصات',
+    'record_summary'=>'تسجيل الملخص',
 ];

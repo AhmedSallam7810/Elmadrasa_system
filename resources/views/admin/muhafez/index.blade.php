@@ -73,10 +73,6 @@
                             @endforelse
                         </tbody>
                     </table>
-
-                    <div class="mt-3">
-                        {{ $muhafezs->links() }}
-                    </div>
                 </div>
             </div>
         </div>
