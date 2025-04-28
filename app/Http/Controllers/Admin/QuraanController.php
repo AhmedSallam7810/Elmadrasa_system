@@ -53,7 +53,7 @@ class QuraanController extends Controller
             $query->where('degree', $request->degree);
         }
 
-        $quraans = $query->latest()->paginate(10);
+        $quraans = $query->latest()->get();
         $classes = SchoolClass::all();
         $muhafezs = Muhafez::all();
 

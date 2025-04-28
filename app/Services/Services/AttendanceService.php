@@ -22,7 +22,7 @@ class AttendanceService implements AttendanceContract
         $filters = $request->all();
         $query = $this->attendance_repository->filter($filters);
 
-        $attendances = $query->latest()->paginate(10);
+        $attendances = $query->latest()->get();
         $classes = SchoolClass::all();
         $date = !empty($filters['date']) ? $filters['date'] : now()->format('Y-m-d');
 

@@ -55,6 +55,4 @@
     </table>
 </div>
 
-<div class="mt-3">
-    {{ $students->appends(request()->query())->links() }}
-</div>
+

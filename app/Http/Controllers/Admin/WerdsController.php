@@ -31,7 +31,7 @@ class WerdsController extends Controller
             if ($request->filled('date')) {
                 $query->whereDate('date', $request->date);
             }
-           
+
             $total = $query->count();
             $good = $query->get()->where('status', 'good')->count();
             $average = $query->get()->where('status', 'average')->count();
@@ -42,7 +42,7 @@ class WerdsController extends Controller
             $query->where('status', $request->status);
         }
 
-        $werds = $query->paginate(10);
+        $werds = $query->get();
 
         // Calculate statistics using the cloned query
         $stats = [
@@ -84,7 +84,7 @@ class WerdsController extends Controller
         }
 
         // Get students
-        $students = $studentsQuery->orderBy('name')->paginate(50);
+        $students = $studentsQuery->orderBy('name')->get();
 
         return view('admin.werds.create', compact('students', 'classes', 'date'));
     }

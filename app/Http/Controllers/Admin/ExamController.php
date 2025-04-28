@@ -11,7 +11,7 @@ class ExamController extends Controller
 {
     public function index()
     {
-        $exams = Exam::with('classRoom')->latest()->paginate(10);
+        $exams = Exam::with('classRoom')->latest()->get();
         return view('admin.exams.index', compact('exams'));
     }
 

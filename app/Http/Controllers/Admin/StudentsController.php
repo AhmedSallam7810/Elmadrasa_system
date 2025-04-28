@@ -43,7 +43,7 @@ class StudentsController extends Controller
 
         $students = $query->with(['classes', 'muhafez'])
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->get();
 
         $classes = SchoolClass::all();
         $muhafezs = Muhafez::where('status', 'active')->get();

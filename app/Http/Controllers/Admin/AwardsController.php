@@ -12,7 +12,7 @@ class AwardsController extends Controller
 {
     public function index()
     {
-        $awards = Award::with('class')->paginate(10);
+        $awards = Award::with('class')->get();
         return view('admin.awards.index', compact('awards'));
     }
 

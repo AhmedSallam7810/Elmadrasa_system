@@ -15,7 +15,7 @@ class ClassesController extends Controller
      */
     public function index()
     {
-        $classes = SchoolClass::paginate(10);
+        $classes = SchoolClass::get();
         return view('admin.classes.index', compact('classes'));
     }
 

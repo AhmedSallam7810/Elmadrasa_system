@@ -14,7 +14,7 @@ class StudyYearController extends Controller
      */
     public function index()
     {
-        $studyYears = StudyYear::withCount(['terms', 'classes'])->latest()->paginate(10);
+        $studyYears = StudyYear::withCount(['terms', 'classes'])->latest()->get();
         return view('admin.study-years.index', compact('studyYears'));
     }
 
