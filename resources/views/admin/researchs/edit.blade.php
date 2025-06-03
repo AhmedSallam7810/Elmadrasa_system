@@ -34,7 +34,7 @@
                     </div>
                     <div class="form-group col-md-4">
                         <label for="degree">{{ __('admin.degree') }}</label>
-                        <input type="number" name="degree" id="degree" class="form-control @error('degree') is-invalid @enderror" value="{{ old('degree', $research->degree) }}" min="0" max="20" step="0.5">
+                        <input type="number" name="degree" id="degree" class="form-control @error('degree') is-invalid @enderror" value="{{ old('degree', $research->degree) }}" min="0" max="10" step="0.5">
                         @error('degree')<span class="invalid-feedback">{{ $message }}</span>@enderror
                     </div>
                 </div>

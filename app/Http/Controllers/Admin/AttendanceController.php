@@ -9,8 +9,14 @@ use App\Models\ClassRoom;
 use App\Models\SchoolClass;
 use App\Services\Contracts\AttendanceContract;
 use App\Services\Services\AttendanceService;
+use App\Imports\AttendanceImport;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Validator;
+use App\Exports\AttendanceTemplateExport;
+use App\Exports\StudentsWithoutAttendanceExport;
+use Illuminate\Support\Facades\Log;
 
 class AttendanceController extends Controller
 {
@@ -150,12 +156,9 @@ class AttendanceController extends Controller
 
         $attendance->update([
             'status' => $request->status,
+            'degree' => $request->degree,
             'notes' => $request->notes
         ]);
-
-        // Recalculate degree based on new status
-        $attendance->degree = $attendance->calculateDegree();
-        $attendance->save();
 
         return redirect()->route('admin.attendances.index')
             ->with('success', 'Attendance record updated successfully.');
@@ -181,5 +184,102 @@ class AttendanceController extends Controller
         $date = Carbon::parse($request->date);
 
         return view('admin.attendances.bulk-create', compact('class', 'date'));
+    }
+
+    /**
+     * Import attendance records from Excel file.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function import(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'excel_file' => 'required|file|mimes:xlsx,xls',
+            'date' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        try {
+            // dd($request->all());
+            Excel::import(new AttendanceImport($request->date), $request->file('excel_file'));
+
+            return redirect()->route('admin.attendances.index')
+                ->with('success', __('admin.attendance_imported_successfully'));
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', __('admin.error_importing_attendance') . ': ' . $e->getMessage());
+        }
+    }
+
+
+
+    public function downloadTemplate(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date',
+            'class_id' => 'nullable|exists:classes,id',
+        ]);
+
+        $query = Student::whereDoesntHave('attendances', function ($query) use ($request) {
+            $query->whereDate('date', $request->date);
+        });
+
+        if ($request->class_id) {
+            $query->whereHas('classes', function ($q) use ($request) {
+                $q->where('classes.id', $request->class_id);
+            });
+        }
+
+        $students = $query->get();
+        $fileName = 'attendance_template_' . $request->date . '.xlsx';
+
+        return Excel::download(new AttendanceTemplateExport($students), $fileName);
+    }
+
+    public function getStudentsWithoutAttendance(Request $request)
+    {
+        $date = $request->date ?? now()->format('Y-m-d');
+        $classId = $request->class_id;
+
+        $query = Student::with(['classes', 'attendances' => function ($query) use ($date) {
+            $query->whereDate('date', $date);
+        }])
+            ->whereDoesntHave('attendances', function ($query) use ($date) {
+                $query->whereDate('date', $date);
+            });
+
+        // Only filter by class if a specific class is selected
+        if ($classId && $classId !== '') {
+            $query->whereHas('classes', function ($q) use ($classId) {
+                $q->where('classes.id', $classId);
+            });
+        }
+
+        $students = $query->get();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('admin.attendances.partials.students-table', compact('students', 'date'))->render()
+            ]);
+        }
+
+        return $students;
+    }
+
+    public function exportStudentsWithoutAttendance(Request $request)
+    {
+        $date = $request->date ?? now()->format('Y-m-d');
+        $classId = $request->class_id;
+
+        $students = $this->getStudentsWithoutAttendance($request);
+        $fileName = 'students_without_attendance_' . $date . '.xlsx';
+
+        return Excel::download(new StudentsWithoutAttendanceExport($students, $classId), $fileName);
     }
 }

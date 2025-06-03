@@ -7,6 +7,11 @@ use App\Models\Summary;
 use App\Models\Student;
 use App\Models\ClassRoom;
 use Illuminate\Http\Request;
+use App\Imports\SummaryImport;
+use App\Exports\SummaryTemplateExport;
+use App\Models\SchoolClass;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Validator;
 
 class SummariesController extends Controller
 {
@@ -33,29 +38,29 @@ class SummariesController extends Controller
         $stats = [
             'total_students' => $total_students,
             'total' => $summaries->count(),
-            'good' => $summaries->where('status','good')->count(),
-            'average' => $summaries->where('status','average')->count(),
-            'weak' => $summaries->where('status','weak')->count(),
+            'good' => $summaries->where('status', 'good')->count(),
+            'average' => $summaries->where('status', 'average')->count(),
+            'weak' => $summaries->where('status', 'weak')->count(),
         ];
 
         if ($request->ajax()) {
-            return view('admin.summaries.partials.summary-table', compact('summaries','stats','date'));
+            return view('admin.summaries.partials.summary-table', compact('summaries', 'stats', 'date'));
         }
-        $classes = ClassRoom::orderBy('name')->get();
-        return view('admin.summaries.index', compact('summaries','stats','classes','date'));
+        $classes = SchoolClass::all();
+        return view('admin.summaries.index', compact('summaries', 'stats', 'classes', 'date'));
     }
 
     public function create()
     {
         $date = request('date', now()->format('Y-m-d'));
         $classId = request('class_id');
-        $classes = ClassRoom::orderBy('name')->get();
+        $classes = SchoolClass::get();
         $students = Student::with('classes')
             ->whereDoesntHave('summaries', fn($q) => $q->whereDate('date', $date))
-            ->when($classId, fn($q) => $q->whereHas('classes', fn($q2) => $q2->where('class_rooms.id', $classId)))
+            ->when($classId, fn($q) => $q->whereHas('classes', fn($q2) => $q2->where('classes.id', $classId)))
             ->orderBy('name')->get();
 
-        return view('admin.summaries.create', compact('students','classes','date'));
+        return view('admin.summaries.create', compact('students', 'classes', 'date'));
     }
 
     public function store(Request $request)
@@ -96,7 +101,7 @@ class SummariesController extends Controller
         }
         if ($new) Summary::insert($new);
         foreach ($update as $u) {
-            Summary::where('id', $u['id'])->update([ 'status'=>$u['status'],'degree'=>$u['degree'],'notes'=>$u['notes'],'updated_at'=>$u['updated_at'] ]);
+            Summary::where('id', $u['id'])->update(['status' => $u['status'], 'degree' => $u['degree'], 'notes' => $u['notes'], 'updated_at' => $u['updated_at']]);
         }
 
         return redirect()->route('admin.summaries.index')->with('success', __('admin.records_saved'));
@@ -119,7 +124,7 @@ class SummariesController extends Controller
             'degree' => 'required|numeric|min:0|max:10',
             'notes' => 'nullable|string|max:255',
         ]);
-        $summary->update($request->only('status','degree','notes'));
+        $summary->update($request->only('status', 'degree', 'notes'));
         return redirect()->route('admin.summaries.index')->with('success', __('admin.record_updated'));
     }
 
@@ -127,5 +132,52 @@ class SummariesController extends Controller
     {
         $summary->delete();
         return redirect()->route('admin.summaries.index')->with('success', __('admin.record_deleted'));
+    }
+
+    public function import(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'excel_file' => 'required|file|mimes:xlsx,xls',
+            'date' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        try {
+            Excel::import(new SummaryImport($request->date), $request->file('excel_file'));
+
+            return redirect()->route('admin.summaries.index')
+                ->with('success', __('admin.summaries_imported_successfully'));
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', __('admin.error_importing_summaries') . ': ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date',
+            'class_id' => 'nullable|exists:classes,id',
+        ]);
+
+        $query = Student::whereDoesntHave('summaries', function ($query) use ($request) {
+            $query->whereDate('date', $request->date);
+        });
+
+        if ($request->class_id) {
+            $query->whereHas('classes', function ($q) use ($request) {
+                $q->where('classes.id', $request->class_id);
+            });
+        }
+
+        $students = $query->get();
+        $fileName = 'summary_template_' . $request->date . '.xlsx';
+
+        return Excel::download(new SummaryTemplateExport($students), $fileName);
     }
 }

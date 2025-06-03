@@ -15,6 +15,7 @@ class Research extends Model
     use HasFactory;
 
     protected $fillable = ['student_id', 'date', 'status', 'degree', 'notes'];
+    protected $casts = ['date' => 'date', 'degree' => 'float'];
 
     public function student()
     {

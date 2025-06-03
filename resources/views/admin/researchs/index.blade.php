@@ -4,9 +4,9 @@
 @section('content')
 <div class="container-fluid">
   <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header ">
       <h3 class="card-title">{{ __('admin.research_management') }}</h3>
-      <a href="{{ route('admin.researchs.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> {{ __('admin.add_research') }}</a>
+      <a href="{{ route('admin.researchs.create') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> {{ __('admin.record') }}</a>
     </div>
     <div class="card-body">
       <div class="row mb-3">
@@ -27,7 +27,7 @@
             <option value="weak" {{ request('status')=='weak'?'selected':'' }}>{{ __('admin.weak') }}</option>
           </select>
         </div>
-        <div class="col-md-1"><button id="clear_filters" class="btn btn-secondary"><i class="fas fa-eraser"></i></button></div>
+        <div class="col-md-1"><button id="clear_filters" class="btn btn-primary"><i class="fas fa-eraser"></i> {{ __('admin.clear') }}</button></div>
       </div>
       <div id="research-table">@include('admin.researchs.partials.research-table', ['researchs'=>$researchs,'stats'=>$stats,'date'=>$date])</div>
     </div>

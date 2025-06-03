@@ -24,13 +24,12 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::guard('admin')->attempt($request->only('email', 'password'))) {
-            dd($request->all());
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        return redirect()->intended(route('admin.dashboard'));
+        return redirect()->intended(route('admin.students.index'));
     }
 
     public function logout(Request $request)

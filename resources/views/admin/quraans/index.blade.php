@@ -9,11 +9,11 @@
             <div class="card card-outline card-primary">
                 <div class="card-header">
                     <h3 class="card-title">
-                        <i class="fas fa-book-quran mr-2"></i>{{ __('admin.quraan_records') }}
+                        <i class="fas fa-book-quran mr-2"></i>{{ __('admin.quraan') }}
                     </h3>
                     <div class="card-tools">
                         <a href="{{ route('admin.quraans.create') }}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-plus"></i> {{ __('admin.record_quraan') }}
+                            <i class="fas fa-plus"></i> {{ __('admin.record') }}
                         </a>
                     </div>
                 </div>

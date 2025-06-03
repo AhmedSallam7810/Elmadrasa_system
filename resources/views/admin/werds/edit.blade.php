@@ -6,10 +6,10 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Edit Werd Record</h3>
+                    <h3 class="card-title">{{ __('admin.edit_werd') }}</h3>
                     <div class="card-tools">
-                        <a href="{{ route('admin.werds.index') }}" class="btn btn-default">
-                            <i class="fas fa-arrow-left"></i> Back to List
+                        <a href="{{ route('admin.werds.index') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> {{ __('admin.back') }}
                         </a>
                     </div>
                 </div>
@@ -21,14 +21,14 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Student</label>
-                                    <input type="text" class="form-control" value="{{ $werd->student->name }}" readonly>
+                                    <label>{{ __('admin.date') }}</label>
+                                    <input type="text" class="form-control" value="{{ $werd->date->format('Y-m-d') }}" readonly>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Date</label>
-                                    <input type="text" class="form-control" value="{{ $werd->date->format('Y-m-d') }}" readonly>
+                                    <label>{{ __('admin.student') }}</label>
+                                    <input type="text" class="form-control" value="{{ $werd->student->name }}" readonly>
                                 </div>
                             </div>
                         </div>
@@ -36,7 +36,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="status">Status</label>
+                                    <label>{{ __('admin.status') }}</label>
                                     <select name="status" id="status" class="form-control @error('status') is-invalid @enderror" required>
                                         <option value="good" {{ $werd->status === 'good' ? 'selected' : '' }}>{{ __('admin.good') }}</option>
                                         <option value="average" {{ $werd->status === 'average' ? 'selected' : '' }}>{{ __('admin.average') }}</option>
@@ -49,8 +49,8 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="degree">Degree (0-10)</label>
-                                    <input type="number" name="degree" id="degree" 
+                                    <label>{{ __('admin.degree') }}</label>
+                                    <input type="number" name="degree" id="degree"
                                            class="form-control @error('degree') is-invalid @enderror"
                                            value="{{ old('degree', $werd->degree) }}"
                                            min="0" max="10" required>
@@ -61,11 +61,11 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="notes">Notes</label>
-                                    <input type="text" name="notes" id="notes" 
+                                    <label>{{ __('admin.notes') }}</label>
+                                    <input type="text" name="notes" id="notes"
                                            class="form-control @error('notes') is-invalid @enderror"
                                            value="{{ old('notes', $werd->notes) }}"
-                                           placeholder="Optional notes">
+                                           placeholder="{{ __('admin.optional_notes') }}">
                                     @error('notes')
                                         <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
@@ -74,7 +74,7 @@
                         </div>
 
                         <div class="mt-4">
-                            <button type="submit" class="btn btn-primary">Update Werd Record</button>
+                            <button type="submit" class="btn btn-primary">{{ __('admin.update') }}</button>
                         </div>
                     </form>
                 </div>

@@ -58,7 +58,22 @@
                     label: '{{ __('admin.attendance') }}',
                     data: {!! json_encode($attendanceDegrees) !!},
                     backgroundColor: 'rgba(75, 192, 192, 0.6)'
-                }
+                },
+                {
+                    label: '{{ __('admin.behavior') }}',
+                    data: {!! json_encode($behaviorDegrees) !!},
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)'
+                },
+                {
+                    label: '{{ __('admin.summaries') }}',
+                    data: {!! json_encode($summariesDegrees) !!},
+                    backgroundColor: 'rgba(255, 159, 64, 0.6)'
+                },
+                {
+                    label: '{{ __('admin.researchs') }}',
+                    data: {!! json_encode($researchsDegrees) !!},
+                    backgroundColor: 'rgba(153, 102, 255, 0.6)'
+                },
             ]
         },
         options: {

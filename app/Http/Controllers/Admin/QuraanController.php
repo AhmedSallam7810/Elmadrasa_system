@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\QuraanTemplateExport;
 use App\Http\Controllers\Controller;
+use App\Imports\QuraanImport;
 use App\Models\Quraan;
 use App\Models\Student;
 use App\Models\SchoolClass;
 use App\Models\Muhafez;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class QuraanController extends Controller
 {
@@ -28,12 +32,12 @@ class QuraanController extends Controller
             $query->whereHas('student.classes', function ($q) use ($request) {
                 $q->where('classes.id', $request->class_id);
             });
-            $total_students = Student::with(['classes'])->whereHas('classes', function($q) use ($request) {
+            $total_students = Student::with(['classes'])->whereHas('classes', function ($q) use ($request) {
                 $q->where('classes.id', $request->class_id);
             })->count();
         }
         if ($request->filled('muhafez_id')) {
-            $query->whereHas('student.muhafez', function($q) use ($request) {
+            $query->whereHas('student.muhafez', function ($q) use ($request) {
                 $q->where('muhafezs.id', $request->muhafez_id);
             });
         }
@@ -78,6 +82,7 @@ class QuraanController extends Controller
     {
         $date = request('date', now()->format('Y-m-d'));
         $classId = request('class_id');
+        $muhafezId = request('muhafez_id');
 
         // Get students who don't have quraan records for the selected date
         $query = Student::with(['classes', 'quraans' => function ($query) use ($date) {
@@ -90,6 +95,12 @@ class QuraanController extends Controller
         if ($classId) {
             $query->whereHas('classes', function ($q) use ($classId) {
                 $q->where('classes.id', $classId);
+            });
+        }
+
+        if ($muhafezId) {
+            $query->whereHas('muhafez', function ($q) use ($muhafezId) {
+                $q->where('muhafezs.id', $muhafezId);
             });
         }
 
@@ -190,12 +201,9 @@ class QuraanController extends Controller
 
         $quraan->update([
             'status' => $request->status,
+            'degree' => $request->degree,
             'notes' => $request->notes
         ]);
-
-        // Recalculate degree based on new status
-        $quraan->degree = $quraan->calculateDegree();
-        $quraan->save();
 
         return redirect()->route('admin.quraans.index')
             ->with('success', 'Quraan record updated successfully.');
@@ -221,5 +229,52 @@ class QuraanController extends Controller
         $date = Carbon::parse($request->date);
 
         return view('admin.quraans.bulk-create', compact('class', 'date'));
+    }
+
+    public function import(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'excel_file' => 'required|file|mimes:xlsx,xls',
+            'date' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        try {
+            Excel::import(new QuraanImport($request->date), $request->file('excel_file'));
+
+            return redirect()->route('admin.quraans.index')
+                ->with('success', __('admin.quraan_imported_successfully'));
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', __('admin.error_importing_quraan') . ': ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date',
+            'class_id' => 'nullable|exists:classes,id',
+        ]);
+
+        $query = Student::whereDoesntHave('quraans', function ($query) use ($request) {
+            $query->whereDate('date', $request->date);
+        });
+
+        if ($request->class_id) {
+            $query->whereHas('classes', function ($q) use ($request) {
+                $q->where('classes.id', $request->class_id);
+            });
+        }
+
+        $students = $query->get();
+        $fileName = 'quraan_template_' . $request->date . '.xlsx';
+
+        return Excel::download(new QuraanTemplateExport($students), $fileName);
     }
 }

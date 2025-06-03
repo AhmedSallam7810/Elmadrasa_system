@@ -135,10 +135,10 @@
                     </td>
                     <td>{{ $attendance->notes }}</td>
                     <td>
-                        <a href="{{ route('admin.attendances.show', $attendance) }}"
+                        {{-- <a href="{{ route('admin.attendances.show', $attendance) }}"
                             class="btn btn-info btn-sm">
                             <i class="fas fa-eye">{{__('admin.view')}}</i>
-                        </a>
+                        </a> --}}
                         <a href="{{ route('admin.attendances.edit', $attendance) }}"
                             class="btn btn-primary btn-sm">
                             <i class="fas fa-edit">{{__('admin.edit')}}</i>

@@ -29,7 +29,7 @@
         <ul class="navbar-nav flex-fill w-100 mb-2">
           <li class="nav-item w-100">
             <a class="nav-link {{ Request::is('admin/classes*') ? 'active' : '' }}" href="{{ route('admin.classes.index') }}">
-              <i class="fe fe-calendar fe-16"></i>
+              <i class="fe fe-award fe-16"></i>
               <span class="ml-3 item-text">{{ __('admin.classes') }}</span>
             </a>
           </li>
@@ -37,7 +37,7 @@
         <ul class="navbar-nav flex-fill w-100 mb-2">
             <li class="nav-item w-100">
               <a class="nav-link {{ Request::is('admin/muhafezs*') ? 'active' : '' }}" href="{{ route('admin.muhafezs.index') }}">
-                <i class="fe fe-calendar fe-16"></i>
+                <i class="fe fe-award fe-16"></i>
                 <span class="ml-3 item-text">{{ __('admin.muhafezs') }}</span>
               </a>
             </li>
@@ -45,8 +45,16 @@
       <ul class="navbar-nav flex-fill w-100 mb-2">
         <li class="nav-item w-100">
           <a class="nav-link {{ Request::is('admin/students*') ? 'active' : '' }}" href="{{ route('admin.students.index') }}">
-            <i class="fe fe-calendar fe-16"></i>
+            <i class="fe fe-award fe-16"></i>
             <span class="ml-3 item-text">{{ __('admin.students') }}</span>
+          </a>
+        </li>
+      </ul>
+      <ul class="navbar-nav flex-fill w-100 mb-2">
+        <li class="nav-item w-100">
+          <a class="nav-link {{ Request::is('admin/attendance*') ? 'active' : '' }}" href="{{ route('admin.attendances.index') }}">
+            <i class="fe fe-calendar fe-16"></i>
+            <span class="ml-3 item-text">{{ __('admin.attendances') }}</span>
           </a>
         </li>
       </ul>
@@ -54,7 +62,7 @@
       <ul class="navbar-nav flex-fill w-100 mb-2">
         <li class="nav-item w-100">
           <a class="nav-link {{ Request::is('admin/quraan*') ? 'active' : '' }}" href="{{ route('admin.quraans.index') }}">
-            <i class="fe fe-award fe-16"></i>
+            <i class="fe fe-calendar fe-16"></i>
             <span class="ml-3 item-text">{{ __('admin.quraans') }}</span>
           </a>
         </li>
@@ -63,7 +71,7 @@
       <ul class="navbar-nav flex-fill w-100 mb-2">
         <li class="nav-item w-100">
           <a class="nav-link {{ Request::is('admin/werds*') ? 'active' : '' }}" href="{{ route('admin.werds.index') }}">
-            <i class="fe fe-award fe-16"></i>
+            <i class="fe fe-calendar fe-16"></i>
             <span class="ml-3 item-text">{{ __('admin.werds') }}</span>
           </a>
         </li>
@@ -72,7 +80,7 @@
       <ul class="navbar-nav flex-fill w-100 mb-2">
         <li class="nav-item w-100">
           <a class="nav-link {{ Request::is('admin/behaviors*') ? 'active' : '' }}" href="{{ route('admin.behaviors.index') }}">
-            <i class="fe fe-award fe-16"></i>
+            <i class="fe fe-calendar fe-16"></i>
             <span class="ml-3 item-text">{{ __('admin.behaviors') }}</span>
           </a>
         </li>
@@ -87,11 +95,22 @@
         </li>
       </ul> --}}
 
+
+
       <ul class="navbar-nav flex-fill w-100 mb-2">
         <li class="nav-item w-100">
-          <a class="nav-link {{ Request::is('admin/attendance*') ? 'active' : '' }}" href="{{ route('admin.attendances.index') }}">
+          <a class="nav-link {{ Request::is('admin/summaries*') ? 'active' : '' }}" href="{{ route('admin.summaries.index') }}">
             <i class="fe fe-calendar fe-16"></i>
-            <span class="ml-3 item-text">{{ __('admin.attendances') }}</span>
+            <span class="ml-3 item-text">{{ __('admin.summaries') }}</span>
+          </a>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav flex-fill w-100 mb-2">
+        <li class="nav-item w-100">
+          <a class="nav-link {{ Request::is('admin/researchs*') ? 'active' : '' }}" href="{{ route('admin.researchs.index') }}">
+            <i class="fe fe-calendar fe-16"></i>
+            <span class="ml-3 item-text">{{ __('admin.researchs') }}</span>
           </a>
         </li>
       </ul>

@@ -13,7 +13,7 @@
                     </h3>
                     <div class="card-tools">
                         <a href="{{ route('admin.students.create') }}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-plus"></i> {{ __('admin.add_new_student') }}
+                            <i class="fas fa-plus"></i> {{ __('admin.add') }}
                         </a>
                     </div>
                 </div>
@@ -23,7 +23,7 @@
                     <div class="row mb-4">
                         <div class="col-md-12">
                             <div class="card card-outline card-info">
-                               
+
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-3">

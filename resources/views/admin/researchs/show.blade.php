@@ -29,7 +29,7 @@
                 </div>
                 <div class="form-group col-md-4">
                     <label>{{ __('admin.degree') }}</label>
-                    <input type="text" class="form-control" value="{{ $research->degree }} / 20" readonly>
+                    <input type="text" class="form-control" value="{{ $research->degree }} / 10" readonly>
                 </div>
             </div>
             <div class="form-group">

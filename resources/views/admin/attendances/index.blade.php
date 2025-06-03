@@ -6,6 +6,8 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
+
+
             <div class="card card-outline card-primary">
                 <div class="card-header">
                     <h3 class="card-title">
@@ -15,6 +17,7 @@
                         <a href="{{ route('admin.attendances.create') }}" class="btn btn-primary btn-sm">
                             <i class="fas fa-plus"></i> {{ __('admin.record_attendance') }}
                         </a>
+
                     </div>
                 </div>
                 <div class="card-body">
@@ -93,11 +96,6 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="card card-outline card-primary">
-                                {{-- <div class="card-header">
-                                    <h3 class="card-title">
-                                        <i class="fas fa-table mr-2"></i>{{ __('admin.attendance_statistics') }}
-                                    </h3>
-                                </div> --}}
                                 <div class="card-body">
                                     <div id="attendance-table">
                                         @include('admin.attendances.partials.attendance-table')

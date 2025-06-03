@@ -24,7 +24,7 @@
                                 id="student_{{ $student->id }}"
                                 name="student_ids[]"
                                 value="{{ $student->id }}"
-                                checked>
+                                >
                             <label class="custom-control-label" for="student_{{ $student->id }}"></label>
                         </div>
                     </td>

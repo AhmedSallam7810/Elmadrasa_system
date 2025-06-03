@@ -63,22 +63,26 @@ class BehaviorsController extends Controller
             'date' => 'required|date',
             'student_ids' => 'required|array',
             'student_ids.*' => 'exists:students,id',
-            'status' => 'required|array','status.*' => 'required|in:good,average,weak',
-            'degree' => 'required|array','degree.*' => 'required|numeric|min:0|max:10',
-            'notes' => 'nullable|array','notes.*' => 'nullable|string|max:255',
+            'status' => 'required|array',
+            'status.*' => 'required|in:good,average,weak',
+            'degree' => 'required|array',
+            'degree.*' => 'required|numeric|min:0|max:10',
+            'notes' => 'nullable|array',
+            'notes.*' => 'nullable|string|max:255',
         ]);
         $date = $request->date;
-        $records = [];$updates = [];
+        $records = [];
+        $updates = [];
         foreach ($request->student_ids as $id) {
             $rec = Behavior::where('student_id', $id)->whereDate('date', $date)->first();
             if ($rec) {
-                $updates[] = ['id'=>$rec->id,'status'=>$request->status[$id],'degree'=>$request->degree[$id],'notes'=>$request->notes[$id]??null,'updated_at'=>now()];
+                $updates[] = ['id' => $rec->id, 'status' => $request->status[$id], 'degree' => $request->degree[$id], 'notes' => $request->notes[$id] ?? null, 'updated_at' => now()];
             } else {
-                $records[] = ['student_id'=>$id,'date'=>$date,'status'=>$request->status[$id],'degree'=>$request->degree[$id],'notes'=>$request->notes[$id]??null,'created_at'=>now(),'updated_at'=>now()];
+                $records[] = ['student_id' => $id, 'date' => $date, 'status' => $request->status[$id], 'degree' => $request->degree[$id], 'notes' => $request->notes[$id] ?? null, 'created_at' => now(), 'updated_at' => now()];
             }
         }
         if ($records) Behavior::insert($records);
-        foreach ($updates as $u) Behavior::where('id',$u['id'])->update(['status'=>$u['status'],'degree'=>$u['degree'],'notes'=>$u['notes'],'updated_at'=>$u['updated_at']]);
+        foreach ($updates as $u) Behavior::where('id', $u['id'])->update(['status' => $u['status'], 'degree' => $u['degree'], 'notes' => $u['notes'], 'updated_at' => $u['updated_at']]);
         return redirect()->route('admin.behaviors.index')->with('success', 'Behavior records saved successfully.');
     }
 
@@ -94,8 +98,8 @@ class BehaviorsController extends Controller
 
     public function update(Request $request, Behavior $behavior)
     {
-        $request->validate(['status'=>'required|in:good,average,weak','degree'=>'required|numeric|min:0|max:10','notes'=>'nullable|string|max:255']);
-        $behavior->update($request->only('status','degree','notes'));
+        $request->validate(['status' => 'required|in:good,average,weak', 'degree' => 'required|numeric|min:0|max:10', 'notes' => 'nullable|string|max:255']);
+        $behavior->update($request->only('status', 'degree', 'notes'));
         return redirect()->route('admin.behaviors.index')->with('success', 'Behavior record updated successfully.');
     }
 
@@ -103,5 +107,44 @@ class BehaviorsController extends Controller
     {
         $behavior->delete();
         return redirect()->route('admin.behaviors.index')->with('success', 'Behavior record deleted successfully.');
+    }
+
+    /**
+     * Get students without behavior records for the selected date.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function getStudentsWithoutBehavior(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date',
+            'class_id' => 'nullable|exists:classes,id',
+        ]);
+
+        $query = Student::with(['classes'])
+            ->whereDoesntHave('behaviors', function ($query) use ($request) {
+                $query->whereDate('date', $request->date);
+            });
+
+        // Only filter by class if a specific class is selected
+        if ($request->class_id && $request->class_id !== '') {
+            $query->whereHas('classes', function ($q) use ($request) {
+                $q->where('classes.id', $request->class_id);
+            });
+        }
+
+
+        $students = $query->orderBy('name')->get();
+
+        if ($students->isEmpty()) {
+            return response()->json([
+                'html' => '<div class="alert alert-info"><i class="fas fa-info-circle mr-2"></i>' . __('admin.no_students_found_without_records') . '</div>'
+            ]);
+        }
+
+        $html = view('admin.behaviors.partials.students-table', compact('students'))->render();
+
+        return response()->json(['html' => $html]);
     }
 }

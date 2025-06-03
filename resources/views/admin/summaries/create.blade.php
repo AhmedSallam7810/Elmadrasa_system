@@ -8,7 +8,11 @@
     <div class="card-header">
       <h3 class="card-title">{{ __('admin.add_summary') }}</h3>
       <div class="card-tools">
-        <a href="{{ route('admin.summaries.index') }}" class="btn btn-default btn-sm"><i class="fas fa-arrow-left"></i> {{ __('admin.back') }}</a>
+        <div class="d-flex">
+          <a href="{{ route('admin.summaries.index') }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left"></i> {{ __('admin.back') }}
+          </a>
+        </div>
       </div>
     </div>
     <div class="card-body">
@@ -31,48 +35,51 @@
               @endforeach
             </select>
           </div>
+          <div class="col-md-4">
+            <div class="form-group">
+                <label>&nbsp;</label>
+                <div class="d-flex">
+                    <button type="button" class="btn btn-success mr-2" id="export-excel">
+                        <i class="fas fa-file-excel mr-1"></i> {{ __('admin.export_excel') }}
+                    </button>
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadExcelModal">
+                        <i class="fas fa-upload mr-1"></i> {{ __('admin.upload_excel') }}
+                    </button>
+                </div>
+            </div>
+        </div>
         </div>
 
-        @if($students->isEmpty())
-          <div class="alert alert-info">{{ __('admin.no_students_found_without_records') }}</div>
-        @else
-        <div class="table-responsive">
-          <table class="table table-bordered table-striped">
-            <thead>
-              <tr>
-                <th><input type="checkbox" id="select-all"></th>
-                <th>{{ __('admin.student_name') }}</th>
-                <th>{{ __('admin.class') }}</th>
-                <th>{{ __('admin.status') }}</th>
-                <th>{{ __('admin.degree') }}</th>
-                <th>{{ __('admin.notes') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach($students as $student)
-              <tr>
-                <td><input type="checkbox" class="student-checkbox" name="student_ids[]" value="{{ $student->id }}" checked></td>
-                <td>{{ $student->name }}</td>
-                <td>{{ $student->classes->pluck('name')->implode(', ') }}</td>
-                <td>
-                  <select name="status[{{ $student->id }}]" class="form-control status-select" data-student-id="{{ $student->id }}">
-                    <option value="good">{{ __('admin.good') }}</option>
-                    <option value="average">{{ __('admin.average') }}</option>
-                    <option value="weak">{{ __('admin.weak') }}</option>
-                  </select>
-                </td>
-                <td><input type="number" name="degree[{{ $student->id }}]" class="form-control degree-input" value="10" min="0" max="10" step="0.5" data-student-id="{{ $student->id }}"></td>
-                <td><input type="text" name="notes[{{ $student->id }}]" class="form-control"></td>
-              </tr>
-              @endforeach
-            </tbody>
-          </table>
+        @include('admin.summaries.partials.student-table')
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Excel Upload Modal -->
+<div class="modal fade" id="uploadExcelModal" tabindex="-1" role="dialog" aria-labelledby="uploadExcelModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="uploadExcelModalLabel">{{ __('admin.upload_summaries_excel') }}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{{ route('admin.summaries.import') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="hidden" name="date" id="upload_date">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="excel_file">{{ __('admin.excel_file') }}</label>
+            <input type="file" class="form-control-file" id="excel_file" name="excel_file" accept=".xlsx,.xls" required>
+            <small class="form-text text-muted">{{ __('admin.summaries_excel_format_help') }}</small>
+          </div>
         </div>
-        <div class="mt-3">
-          <button type="submit" class="btn btn-primary">{{ __('admin.save') }}</button>
-          <a href="{{ route('admin.summaries.index') }}" class="btn btn-secondary">{{ __('admin.cancel') }}</a>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('admin.cancel') }}</button>
+          <button type="submit" class="btn btn-primary">{{ __('admin.upload') }}</button>
         </div>
-        @endif
       </form>
     </div>
   </div>
@@ -80,6 +87,8 @@
 @endsection
 
 @push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 $(function(){
   $('.select2').select2({ theme:'bootstrap4' });
@@ -95,6 +104,30 @@ $(function(){
   });
   $('#class_id,#date').change(function(){
     window.location.href = '{{ route('admin.summaries.create') }}?class_id='+$('#class_id').val()+'&date='+$('#date').val();
+  });
+  // Export Excel template
+  $('#export-excel').click(function() {
+    const classId = $('#class_id').val();
+    const date = $('#date').val();
+
+    if (!date) {
+      toastr.error('{{ __("admin.please_select_date") }}');
+      return;
+    }
+
+    window.location.href = `{{ route('admin.summaries.download-template') }}?class_id=${classId}&date=${date}`;
+  });
+  // Handle upload modal
+  $('#uploadExcelModal').on('show.bs.modal', function () {
+    const date = $('#date').val();
+    const classId = $('#class_id').val();
+
+    if (!date) {
+      toastr.error('{{ __("admin.please_select_date") }}');
+      return false;
+    }
+
+    $('#upload_date').val(date);
   });
 });
 </script>

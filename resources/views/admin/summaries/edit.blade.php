@@ -8,7 +8,7 @@
     <div class="card-header">
       <h3 class="card-title">{{ __('admin.edit_summary') }}</h3>
       <div class="card-tools">
-        <a href="{{ route('admin.summaries.index') }}" class="btn btn-default btn-sm"><i class="fas fa-arrow-left"></i> {{ __('admin.back') }}</a>
+        <a href="{{ route('admin.summaries.index') }}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> {{ __('admin.back') }}</a>
       </div>
     </div>
     <div class="card-body">

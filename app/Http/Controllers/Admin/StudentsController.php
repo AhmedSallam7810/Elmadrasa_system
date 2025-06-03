@@ -7,11 +7,15 @@ use App\Models\User;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Muhafez;
+use App\Imports\StudentsImport;
+use App\Imports\StudentImport;
+use App\Exports\StudentTemplateExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StudentsController extends Controller
 {
@@ -31,7 +35,7 @@ class StudentsController extends Controller
 
         // Filter by class
         if ($request->filled('class')) {
-            $query->whereHas('classes', function($q) use ($request) {
+            $query->whereHas('classes', function ($q) use ($request) {
                 $q->where('classes.id', $request->class);
             });
         }
@@ -114,14 +118,14 @@ class StudentsController extends Controller
      */
     public function show($id)
     {
-        $student = Student::with(['classes', 'muhafez'])->findOrFail($id);
+        $student = Student::with(['classes', 'muhafez', 'quraans', 'werds', 'attendances', 'behaviors', 'summaries', 'researchs'])->findOrFail($id);
 
         // Aggregate performance data by date
-        $student->load(['quraans', 'werds', 'attendances']);
+        $student->load(['quraans', 'werds', 'attendances', 'behaviors', 'summaries', 'researchs']);
         // Build maps: date string => total degree
         $quraanMap = $student->quraans
             ->groupBy(fn($r) => $r->date->toDateString())
-            ->map(fn($group) => $group->sum(fn($r) => $r->calculateDegree()))
+            ->map(fn($group) => $group->sum('degree'))
             ->toArray();
         $werdMap = $student->werds
             ->groupBy(fn($r) => $r->date->toDateString())
@@ -129,7 +133,21 @@ class StudentsController extends Controller
             ->toArray();
         $attendanceMap = $student->attendances
             ->groupBy(fn($a) => $a->date->toDateString())
-            ->map(fn($group) => $group->sum(fn($a) => $a->calculateDegree()))
+            ->map(fn($group) => $group->sum('degree'))
+            ->toArray();
+        $behaviorMap = $student->behaviors
+            ->groupBy(fn($b) => $b->date->toDateString())
+            ->map(fn($group) => $group->sum('degree'))
+            ->toArray();
+
+        $summariesMap = $student->summaries
+            ->groupBy(fn($s) => $s->date->toDateString())
+            ->map(fn($group) => $group->sum('degree'))
+            ->toArray();
+
+        $researchsMap = $student->researchs
+            ->groupBy(fn($r) => $r->date->toDateString())
+            ->map(fn($group) => $group->sum('degree'))
             ->toArray();
         // Collect all unique dates and sort
         $dates = collect(
@@ -137,7 +155,10 @@ class StudentsController extends Controller
                 array_merge(
                     array_keys($quraanMap),
                     array_keys($werdMap),
-                    array_keys($attendanceMap)
+                    array_keys($attendanceMap),
+                    array_keys($behaviorMap),
+                    array_keys($summariesMap),
+                    array_keys($researchsMap),
                 )
             )
         )->sort()->values();
@@ -145,8 +166,11 @@ class StudentsController extends Controller
         $quraanDegrees = $dates->map(fn($d) => $quraanMap[$d] ?? 0);
         $werdDegrees = $dates->map(fn($d) => $werdMap[$d] ?? 0);
         $attendanceDegrees = $dates->map(fn($d) => $attendanceMap[$d] ?? 0);
+        $behaviorDegrees = $dates->map(fn($d) => $behaviorMap[$d] ?? 0);
+        $summariesDegrees = $dates->map(fn($d) => $summariesMap[$d] ?? 0);
+        $researchsDegrees = $dates->map(fn($d) => $researchsMap[$d] ?? 0);
 
-        return view('admin.students.show', compact('student', 'dates', 'quraanDegrees', 'werdDegrees', 'attendanceDegrees'));
+        return view('admin.students.show', compact('student', 'dates', 'quraanDegrees', 'werdDegrees', 'attendanceDegrees', 'behaviorDegrees', 'summariesDegrees', 'researchsDegrees'));
     }
 
     /**
@@ -219,5 +243,40 @@ class StudentsController extends Controller
 
         return redirect()->route('admin.students.index')
             ->with('success', __('admin.student_deleted_successfully'));
+    }
+
+    /**
+     * Import students from Excel file.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function import(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'excel_file' => 'required|file|mimes:xlsx,xls',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        try {
+            Excel::import(new StudentImport, $request->file('excel_file'));
+
+            return redirect()->route('admin.students.index')
+                ->with('success', __('admin.students_imported_successfully'));
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', __('admin.error_importing_students') . ': ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        $fileName = 'student_template.xlsx';
+        return Excel::download(new StudentTemplateExport, $fileName);
     }
 }

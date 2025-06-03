@@ -132,10 +132,10 @@
                     </td>
                     <td>{{ $werd->notes }}</td>
                     <td>
-                        <a href="{{ route('admin.werds.show', $werd) }}"
+                        {{-- <a href="{{ route('admin.werds.show', $werd) }}"
                             class="btn btn-info btn-sm">
                             <i class="fas fa-eye"></i> {{__('admin.view')}}
-                        </a>
+                        </a> --}}
                         <a href="{{ route('admin.werds.edit', $werd) }}"
                             class="btn btn-primary btn-sm">
                             <i class="fas fa-edit"></i> {{__('admin.edit')}}

@@ -4,89 +4,255 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">{{ __('admin.record_behavior') }}</h3>
-            <div class="card-tools">
-                <a href="{{ route('admin.behaviors.index') }}" class="btn btn-default btn-sm"><i class="fas fa-arrow-left"></i> {{ __('admin.back') }}</a>
-            </div>
-        </div>
-        <div class="card-body">
-            <form action="{{ route('admin.behaviors.store') }}" method="POST" id="behavior-form">
-                @csrf
-                <input type="hidden" name="date" id="form_date" value="{{ request('date', $date) }}">
-                <input type="hidden" name="class_id" id="form_class_id" value="{{ request('class_id') }}">
-
-                <div class="row mb-4">
-                    <div class="col-md-3">
-                        <label for="date">{{ __('admin.date') }}</label>
-                        <input type="date" id="date" name="date" class="form-control" value="{{ request('date', $date) }}">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="class_id">{{ __('admin.class') }}</label>
-                        <select id="class_id" class="form-control select2">
-                            <option value="">{{ __('admin.all_classes') }}</option>
-                            @foreach($classes as $class)
-                                <option value="{{ $class->id }}" {{ request('class_id')==$class->id?'selected':'' }}>{{ $class->name }}</option>
-                            @endforeach
-                        </select>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{{ __('admin.create_behavior') }}</h3>
+                    <div class="card-tools">
+                        <a href="{{ route('admin.behaviors.index') }}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> {{ __('admin.back') }}</a>
                     </div>
                 </div>
-
-                @if($students->isEmpty())
-                    <div class="alert alert-info">{{ __('admin.no_students_found_without_records') }}</div>
-                @else
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th><input type="checkbox" id="select-all"></th>
-                                <th>{{ __('admin.student_name') }}</th>
-                                <th>{{ __('admin.class') }}</th>
-                                <th>{{ __('admin.status') }}</th>
-                                <th>{{ __('admin.degree') }}</th>
-                                <th>{{ __('admin.notes') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($students as $student)
-                            <tr>
-                                <td><input type="checkbox" class="student-checkbox" name="student_ids[]" value="{{ $student->id }}" checked></td>
-                                <td>{{ $student->name }}</td>
-                                <td>{{ $student->classes->pluck('name')->implode(', ') }}</td>
-                                <td>
-                                    <select name="status[{{ $student->id }}]" class="form-control status-select" data-student-id="{{ $student->id }}">
-                                        <option value="good">{{ __('admin.good') }}</option>
-                                        <option value="average">{{ __('admin.average') }}</option>
-                                        <option value="weak">{{ __('admin.weak') }}</option>
+                <div class="card-body">
+                    <form action="{{ route('admin.behaviors.store') }}" method="POST" id="behavior-form">
+                        @csrf
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="class_id">{{ __('admin.class') }}</label>
+                                    <select class="form-control @error('class_id') is-invalid @enderror" id="class_id" name="class_id" >
+                                        <option value="">{{ __('admin.select_class') }}</option>
+                                        @foreach($classes as $class)
+                                            <option value="{{ $class->id }}" {{ old('class_id') == $class->id ? 'selected' : '' }}>
+                                                {{ $class->name }}
+                                            </option>
+                                        @endforeach
                                     </select>
-                                </td>
-                                <td><input type="number" name="degree[{{ $student->id }}]" class="form-control degree-input" value="10" min="0" max="10" step="0.5"></td>
-                                <td><input type="text" name="notes[{{ $student->id }}]" class="form-control"></td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                                    @error('class_id')
+                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="date">{{ __('admin.date') }}</label>
+                                    <input type="date" class="form-control @error('date') is-invalid @enderror" id="date" name="date" value="{{ old('date', date('Y-m-d')) }}" required>
+                                    @error('date')
+                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <div class="d-flex">
+                                        <button type="button" class="btn btn-success mr-2" id="export-excel">
+                                            <i class="fas fa-file-excel mr-1"></i> {{ __('admin.export_excel') }}
+                                        </button>
+                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadExcelModal">
+                                            <i class="fas fa-upload mr-1"></i> {{ __('admin.upload_excel') }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">{{ __('admin.students') }}</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="students-container">
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-info-circle mr-2"></i>
+                                                {{ __('admin.please_select_class_and_date') }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary" id="submit-btn" disabled>
+                                    <i class="fas fa-save mr-1"></i> {{ __('admin.save') }}
+                                </button>
+                                <a href="{{ route('admin.behaviors.index') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times mr-1"></i> {{ __('admin.cancel') }}
+                                </a>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-                <div class="mt-3">
-                    <button type="submit" class="btn btn-primary">{{ __('admin.save') }}</button>
-                    <a href="{{ route('admin.behaviors.index') }}" class="btn btn-secondary">{{ __('admin.cancel') }}</a>
+                <!-- Excel Upload Modal -->
+                <div class="modal fade" id="uploadExcelModal" tabindex="-1" role="dialog" aria-labelledby="uploadExcelModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="uploadExcelModalLabel">{{ __('admin.upload_behavior_excel') }}</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form action="{{ route('admin.behaviors.import') }}" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                <div class="modal-body">
+                                    <input type="hidden" name="date" id="upload_date">
+                                    <div class="form-group">
+                                        <label for="excel_file">{{ __('admin.excel_file') }}</label>
+                                        <input type="file" class="form-control-file" id="excel_file" name="excel_file" accept=".xlsx,.xls" required>
+                                        <small class="form-text text-muted">{{ __('admin.behavior_excel_format_help') }}</small>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('admin.cancel') }}</button>
+                                    <button type="submit" class="btn btn-primary">{{ __('admin.upload') }}</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-                @endif
-            </form>
+            </div>
         </div>
     </div>
 </div>
 @endsection
-
-@push('scripts')
+<!-- Include jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Include Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-$(function() {
-    $('.select2').select2({ theme: 'bootstrap4' });
-    $('#select-all').change(function(){ $('.student-checkbox').prop('checked', $(this).prop('checked')); });
-    $('.status-select').change(function(){ var id=$(this).data('student-id'), val=$(this).val(); var inp=$('.degree-input[data-student-id="'+id+'"]'); if(val=='weak') inp.val(3); else if(val=='average') inp.val(7); else inp.val(10); });
-    $('.status-select').each(function(){ $(this).data('student-id', $(this).attr('name').match(/\d+/)[0]); });
-    $('#class_id,#date').change(function(){ window.location.href = '{{ route('admin.behaviors.create') }}?class_id='+$('#class_id').val()+'&date='+$('#date').val(); });
+$(document).ready(function() {
+    let selectedStudents = new Set();
+    let loadingTimeout;
+
+    // Function to load students
+    function loadStudents() {
+        const classId = $('#class_id').val();
+        const date = $('#date').val();
+
+        if ( !date) {
+            $('#students-container').html('<div class="alert alert-info"><i class="fas fa-info-circle mr-2"></i>{{ __("admin.please_select_class_and_date") }}</div>');
+            $('#submit-btn').prop('disabled', true);
+            return;
+        }
+
+        $('#students-container').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">{{ __("admin.loading_students") }}</p></div>');
+
+        $.ajax({
+            url: '{{ route("admin.behaviors.get-students-without-behavior") }}',
+            method: 'GET',
+            data: {
+                class_id: classId,
+                date: date
+            },
+            success: function(response) {
+                if (response.html) {
+                    $('#students-container').html(response.html);
+                    initializeCheckboxes();
+                } else {
+                    $('#students-container').html('<div class="alert alert-danger"><i class="fas fa-exclamation-circle mr-2"></i>{{ __("admin.error_loading_students") }}</div>');
+                }
+            },
+            error: function() {
+                $('#students-container').html('<div class="alert alert-danger"><i class="fas fa-exclamation-circle mr-2"></i>{{ __("admin.error_loading_students") }}</div>');
+            }
+        });
+    }
+
+    loadStudents();
+    // Load students when class or date changes
+    $('#class_id, #date').on('change', function() {
+        if (loadingTimeout) {
+            clearTimeout(loadingTimeout);
+        }
+        loadingTimeout = setTimeout(loadStudents, 500);
+    });
+
+    // Export Excel template
+    $('#export-excel').click(function() {
+        const classId = $('#class_id').val();
+        const date = $('#date').val();
+
+        if (!date) {
+            toastr.error('{{ __("admin.please_select_class_and_date") }}');
+            return;
+        }
+
+        window.location.href = `{{ route('admin.behaviors.download-template') }}?class_id=${classId}&date=${date}`;
+    });
+
+    // Handle upload modal
+    $('#uploadExcelModal').on('show.bs.modal', function () {
+        const classId = $('#class_id').val();
+        const date = $('#date').val();
+
+        if (!date) {
+            toastr.error('{{ __("admin.please_select_class_and_date") }}');
+            return false;
+        }
+        $('#upload_date').val(date);
+    });
+
+    // Initialize checkboxes and form validation
+    function initializeCheckboxes() {
+        // Select all checkbox
+        $('#select-all').change(function() {
+            $('.student-checkbox').prop('checked', $(this).prop('checked'));
+            updateSelectedStudents();
+        });
+
+        // Individual student checkboxes
+        $('.student-checkbox').change(function() {
+            updateSelectedStudents();
+        });
+
+        // Status change
+        $('.status-select').change(function() {
+            const studentId = $(this).data('student-id');
+            const status = $(this).val();
+            const degreeInput = $(`.degree-input[data-student-id="${studentId}"]`);
+
+            if (status === 'weak') {
+                degreeInput.val('3');
+            } else if (status === 'average') {
+                degreeInput.val('7');
+            } else {
+                degreeInput.val('10');
+            }
+        });
+
+        // Initial status check
+        $('.status-select').each(function() {
+            $(this).trigger('change');
+        });
+    }
+
+    // Update selected students set and form validation
+    function updateSelectedStudents() {
+        selectedStudents.clear();
+        $('.student-checkbox:checked').each(function() {
+            selectedStudents.add($(this).val());
+        });
+
+        $('#submit-btn').prop('disabled', selectedStudents.size === 0);
+    }
+
+    // Form submission validation
+    $('#behavior-form').submit(function(e) {
+        if (selectedStudents.size === 0) {
+            e.preventDefault();
+            toastr.error('{{ __("admin.please_select_at_least_one_student") }}');
+        }
+    });
+
+    // Initial load if class and date are selected
+    if ($('#class_id').val() && $('#date').val()) {
+        loadStudents();
+    }
 });
 </script>
-@endpush

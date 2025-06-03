@@ -21,13 +21,7 @@
                             <div class="card card-outline card-info">
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="date">{{ __('admin.date') }}</label>
-                                                <input type="date" class="form-control" id="date" value="{{ request('date', $date) }}">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <div class="form-group">
                                                 <label for="class_id">{{ __('admin.class') }}</label>
                                                 <select class="form-control select2" id="class_id">
@@ -39,6 +33,25 @@
                                                         </option>
                                                     @endforeach
                                                 </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="date">{{ __('admin.date') }}</label>
+                                                <input type="date" class="form-control" id="date" value="{{ request('date', $date) }}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>&nbsp;</label>
+                                                <div class="d-flex">
+                                                    <button type="button" class="btn btn-success mr-2" id="export-excel">
+                                                        <i class="fas fa-file-excel mr-1"></i> {{ __('admin.export_excel') }}
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadExcelModal">
+                                                        <i class="fas fa-upload mr-1"></i> {{ __('admin.upload_excel') }}
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -110,11 +123,8 @@
                                                 <td>
                                                     <input type="number" class="form-control degree-input @error('degree.'.$student->id) is-invalid @enderror"
                                                         name="degree[{{ $student->id }}]"
-                                                        value="10"
-                                                        min="0"
-                                                        max="10"
-                                                        step="0.5"
-                                                        data-student-id="{{ $student->id }}">
+                                                        data-student-id="{{ $student->id }}"
+                                                        min="0" max="10" step="0.5" required>
                                                     @error('degree.'.$student->id)
                                                         <span class="invalid-feedback">{{ $message }}</span>
                                                     @enderror
@@ -122,7 +132,7 @@
                                                 <td>
                                                     <input type="text" class="form-control @error('notes.'.$student->id) is-invalid @enderror"
                                                         name="notes[{{ $student->id }}]"
-                                                        value="{{ old('notes.'.$student->id) }}">
+                                                        placeholder="{{ __('admin.optional_notes') }}">
                                                     @error('notes.'.$student->id)
                                                         <span class="invalid-feedback">{{ $message }}</span>
                                                     @enderror
@@ -144,9 +154,42 @@
         </div>
     </div>
 </div>
+
+<!-- Excel Upload Modal -->
+<div class="modal fade" id="uploadExcelModal" tabindex="-1" role="dialog" aria-labelledby="uploadExcelModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadExcelModalLabel">{{ __('admin.upload_werd_excel') }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ route('admin.werds.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <input type="hidden" name="date" id="upload_date">
+                    <div class="form-group">
+                        <label for="excel_file">{{ __('admin.excel_file') }}</label>
+                        <input type="file" class="form-control-file" id="excel_file" name="excel_file" accept=".xlsx,.xls" required>
+                        <small class="form-text text-muted">{{ __('admin.werd_excel_format_help') }}</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('admin.cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('admin.upload') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
-@push('scripts')
+<!-- Include jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Include Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 $(document).ready(function() {
     // Initialize Select2
@@ -199,6 +242,31 @@ $(document).ready(function() {
         $('#form_date').val(date);
         window.location.href = '{{ route('admin.werds.create') }}?class_id=' + classId + '&date=' + date;
     });
+
+    // Export Excel template
+    $('#export-excel').click(function() {
+        const classId = $('#class_id').val();
+        const date = $('#date').val();
+
+        if (!date) {
+            toastr.error('{{ __("admin.please_select_date") }}');
+            return;
+        }
+
+        window.location.href = `{{ route('admin.werds.download-template') }}?class_id=${classId}&date=${date}`;
+    });
+
+    // Handle upload modal
+    $('#uploadExcelModal').on('show.bs.modal', function () {
+        const date = $('#date').val();
+        const classId = $('#class_id').val();
+
+        if (!date) {
+            toastr.error('{{ __("admin.please_select_date") }}');
+            return false;
+        }
+
+        $('#upload_date').val(date);
+    });
 });
 </script>
-@endpush

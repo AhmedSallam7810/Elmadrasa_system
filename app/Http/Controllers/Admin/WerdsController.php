@@ -8,6 +8,10 @@ use App\Models\Student;
 use App\Models\SchoolClass;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Imports\WerdImport;
+use App\Exports\WerdTemplateExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Validator;
 
 class WerdsController extends Controller
 {
@@ -15,27 +19,27 @@ class WerdsController extends Controller
     {
         $query = Werd::with(['student.classes'])
             ->orderBy('date', 'desc');
-            $total_students = Student::with(['classes'])->count();
+        $total_students = Student::with(['classes'])->count();
 
-            $date = $request->filled('date') ? $request->date : now()->format('Y-m-d');
-            // Apply filters
-            if ($request->filled('class_id')) {
-                $query->whereHas('student.classes', function($q) use ($request) {
-                    $q->where('classes.id', $request->class_id);
-                });
+        $date = $request->filled('date') ? $request->date : now()->format('Y-m-d');
+        // Apply filters
+        if ($request->filled('class_id')) {
+            $query->whereHas('student.classes', function ($q) use ($request) {
+                $q->where('classes.id', $request->class_id);
+            });
 
-                $total_students = Student::with(['classes'])->whereHas('classes', function($q) use ($request) {
-                    $q->where('classes.id', $request->class_id);
-                })->count();
-            }
-            if ($request->filled('date')) {
-                $query->whereDate('date', $request->date);
-            }
+            $total_students = Student::with(['classes'])->whereHas('classes', function ($q) use ($request) {
+                $q->where('classes.id', $request->class_id);
+            })->count();
+        }
+        if ($request->filled('date')) {
+            $query->whereDate('date', $request->date);
+        }
 
-            $total = $query->count();
-            $good = $query->get()->where('status', 'good')->count();
-            $average = $query->get()->where('status', 'average')->count();
-            $weak = $query->get()->where('status', 'weak')->count();
+        $total = $query->count();
+        $good = $query->get()->where('status', 'good')->count();
+        $average = $query->get()->where('status', 'average')->count();
+        $weak = $query->get()->where('status', 'weak')->count();
 
 
         if ($request->filled('status')) {
@@ -79,7 +83,7 @@ class WerdsController extends Controller
         // Apply class filter if selected
         if ($classId) {
             $studentsQuery->whereHas('classes', function ($query) use ($classId) {
-                $query->where('school_classes.id', $classId);
+                $query->where('classes.id', $classId);
             });
         }
 
@@ -192,5 +196,52 @@ class WerdsController extends Controller
         return redirect()
             ->route('admin.werds.index')
             ->with('success', 'Werd record has been deleted successfully.');
+    }
+
+    public function import(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'excel_file' => 'required|file|mimes:xlsx,xls',
+            'date' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        try {
+            Excel::import(new WerdImport($request->date), $request->file('excel_file'));
+
+            return redirect()->route('admin.werds.index')
+                ->with('success', __('admin.werd_imported_successfully'));
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', __('admin.error_importing_werd') . ': ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date',
+            'class_id' => 'nullable|exists:classes,id',
+        ]);
+
+        $query = Student::whereDoesntHave('werds', function ($query) use ($request) {
+            $query->whereDate('date', $request->date);
+        });
+
+        if ($request->class_id) {
+            $query->whereHas('classes', function ($q) use ($request) {
+                $q->where('classes.id', $request->class_id);
+            });
+        }
+
+        $students = $query->get();
+        $fileName = 'werd_template_' . $request->date . '.xlsx';
+
+        return Excel::download(new WerdTemplateExport($students), $fileName);
     }
 }
